@@ -419,7 +419,7 @@ async function maybeTriggerAutoIrrigation(input: {
       duration_seconds: durationSeconds,
       liters_target: litersTarget,
       flow_rate_liters_per_minute: input.flowRateLitersPerMinute ?? recommendation.flow_rate_liters_per_minute ?? undefined,
-      recalculate_duration_from_flow: true,
+      recalculate_duration_from_flow: recommendationSource !== "live_potted_recommendation_created",
       sensor_autopilot: true,
       reason: `Closed-loop sensor autopilot: soil moisture ${currentMoisture.toFixed(0)}%, trigger ${policy.triggerPercent.toFixed(0)}%, ideal ${policy.idealPercent.toFixed(0)}%.`
     })

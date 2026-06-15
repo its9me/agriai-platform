@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     durationSeconds = Math.ceil((litersTarget / flowRateLitersPerMinute) * 60);
   }
 
-  if (!isStopCommand && !manualOverride) {
+  if (!isStopCommand && !manualOverride && !sensorAutopilot) {
     const { data: pottedPlant } = await supabase
       .from("potted_plants")
       .select("id,name,analysis_json,flow_rate_liters_per_minute")
@@ -319,14 +319,14 @@ export async function POST(request: NextRequest) {
         operator_message: "Emergency stop approved: publish OFF command to close the valve immediately.",
         evidence: ["status=OFF", "duration_seconds=0"]
       }
-    : sensorAutopilot && recommendationRow
+    : sensorAutopilot
     ? {
         decision: "approve",
         risk_level: "sensor_autopilot",
         operator_message: "Sensor autopilot approved: saved recommendation, online ESP32, and low soil moisture triggered irrigation.",
         evidence: [
           "sensor_autopilot=true",
-          `recommendation_id=${recommendationRow.id}`,
+          `recommendation_id=${recommendationRow?.id ?? "none"}`,
           `duration_seconds=${durationSeconds}`,
           `liters_target=${litersTarget}`
         ]
@@ -363,6 +363,8 @@ export async function POST(request: NextRequest) {
     issued_at: new Date().toISOString(),
     reason: isStopCommand
       ? commandReason ?? "Admin emergency stop irrigation command"
+      : sensorAutopilot
+      ? commandReason ?? (recommendationRow ? `Sensor autopilot recommendation #${recommendationRow.id}` : "Sensor autopilot irrigation command")
       : recommendationRow
       ? `AI irrigation recommendation #${recommendationRow.id}`
       : commandReason ?? (manualOverride ? "Admin manual override irrigation command" : "Manual irrigation command from operator"),
