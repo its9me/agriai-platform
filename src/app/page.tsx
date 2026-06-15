@@ -1546,8 +1546,6 @@ export default function Home() {
   const [authReady, setAuthReady] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
-  const [authName, setAuthName] = useState("");
-  const [authMode, setAuthMode] = useState<"login" | "bootstrap">("login");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentProfile, setCurrentProfile] = useState<AppProfile | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -3013,32 +3011,6 @@ export default function Home() {
     setActiveSection("assets");
     setWorkspaceMode("user");
     setStatus("تم تسجيل الخروج.");
-  }
-
-  async function bootstrapAdmin() {
-    setError("");
-    setStatus("جاري إنشاء أول Admin...");
-    const response = await fetch("/api/admin/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bootstrap: true,
-        email: authEmail,
-        password: authPassword,
-        full_name: authName || authEmail,
-        role: "admin"
-      })
-    });
-    const payload = await response.json();
-
-    if (!response.ok) {
-      setError(payload.error ?? "Failed to create the first admin.");
-      setStatus("");
-      return;
-    }
-
-    setAuthMode("login");
-    setStatus("تم إنشاء أول Admin. سجل الدخول بنفس البريد وكلمة المرور.");
   }
 
   async function loadAdminUsers() {
@@ -4820,34 +4792,18 @@ export default function Home() {
           <div>
             <span className="loginKicker">AgriAI Control</span>
             <h1>تسجيل دخول المنصة</h1>
-            <p>ادخل بحساب Supabase Auth. أول مرة فقط استخدم تهيئة Admin حتى تبدي تضيف المستخدمين وتربطهم بالأراضي.</p>
-          </div>
-          <div className="authTabs">
-            <button className={authMode === "login" ? "active" : ""} onClick={() => setAuthMode("login")}>
-              دخول
-            </button>
-            <button className={authMode === "bootstrap" ? "active" : ""} onClick={() => setAuthMode("bootstrap")}>
-              أول Admin
-            </button>
+            <p>ادخل بحسابك المصرح من مدير المنصة لمتابعة الأراضي، النباتات، الحساسات، والري.</p>
           </div>
           <div className="loginForm">
-            {authMode === "bootstrap" ? (
-              <label>
-                اسم المدير
-                <input value={authName} onChange={(event) => setAuthName(event.target.value)} placeholder="اسمك" />
-              </label>
-            ) : null}
             <label>
               البريد الإلكتروني
-              <input value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="admin@example.com" />
+              <input value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="user@example.com" />
             </label>
             <label>
               كلمة المرور
               <input type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="******" />
             </label>
-            <button onClick={authMode === "login" ? signIn : bootstrapAdmin}>
-              {authMode === "login" ? "تسجيل الدخول" : "إنشاء أول Admin"}
-            </button>
+            <button onClick={signIn}>تسجيل الدخول</button>
           </div>
         </section>
       </main>
