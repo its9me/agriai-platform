@@ -1,0 +1,32 @@
+{
+  "name": "agriai-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:lan": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.75.0",
+    "leaflet": "^1.9.4",
+    "mqtt": "^5.14.1",
+    "next": "^16.2.7",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.2.7",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .bg{fill:#f4f7f5}
+      .card{fill:#fff;stroke:#cfd9d2;stroke-width:2}
+      .title{font:700 32px Arial, sans-serif;fill:#17211d}
+      .h{font:700 22px Arial, sans-serif;fill:#17211d}
+      .t{font:600 18px Arial, sans-serif;fill:#35443d}
+      .s{font:500 15px Arial, sans-serif;fill:#637069}
+      .pin{fill:#17211d}
+      .red{stroke:#d72638;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .black{stroke:#1d2521;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .blue{stroke:#1f78b4;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .orange{stroke:#f28c28;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .green{stroke:#2b8f5a;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .purple{stroke:#7c4dff;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .railRed{stroke:#d72638;stroke-width:6}
+      .railBlue{stroke:#1f78b4;stroke-width:6}
+      .hole{fill:#d8e0dc}
+      .warn{fill:#fff3df;stroke:#d48a18;stroke-width:2}
+      .ok{fill:#effaf3;stroke:#2b8f5a;stroke-width:2}
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900"/>
+  <text class="title" x="700" y="48" text-anchor="middle">ESP32 AgriAI Wiring - sensors + relay + USB pump</text>
+  <text class="s" x="700" y="78" text-anchor="middle">Use 3.3V for analog sensors. Do not power the pump from ESP32 pins.</text>
+
+  <!-- Breadboard -->
+  <rect class="card" x="90" y="130" width="760" height="560" rx="18"/>
+  <text class="h" x="470" y="165" text-anchor="middle">Breadboard مثل البورد بالصورة</text>
+
+  <!-- rails -->
+  <line class="railRed" x1="140" y1="205" x2="800" y2="205"/>
+  <line class="railBlue" x1="140" y1="245" x2="800" y2="245"/>
+  <text class="t" x="115" y="211" text-anchor="middle" fill="#d72638">+</text>
+  <text class="t" x="115" y="251" text-anchor="middle" fill="#1f78b4">-</text>
+  <text class="s" x="830" y="210" fill="#d72638">3V3 rail</text>
+  <text class="s" x="830" y="250" fill="#1f78b4">GND rail</text>
+
+  <line class="railRed" x1="140" y1="595" x2="800" y2="595"/>
+  <line class="railBlue" x1="140" y1="635" x2="800" y2="635"/>
+  <text class="s" x="830" y="600" fill="#d72638">bridge to top +</text>
+  <text class="s" x="830" y="640" fill="#1f78b4">bridge to top -</text>
+
+  <!-- breadboard holes impression -->
+  <g opacity=".75">
+    <g>
+      <circle class="hole" cx="160" cy="305" r="4"/><circle class="hole" cx="185" cy="305" r="4"/><circle class="hole" cx="210" cy="305" r="4"/><circle class="hole" cx="235" cy="305" r="4"/><circle class="hole" cx="260" cy="305" r="4"/><circle class="hole" cx="285" cy="305" r="4"/><circle class="hole" cx="310" cy="305" r="4"/><circle class="hole" cx="335" cy="305" r="4"/><circle class="hole" cx="360" cy="305" r="4"/><circle class="hole" cx="385" cy="305" r="4"/><circle class="hole" cx="410" cy="305" r="4"/><circle class="hole" cx="435" cy="305" r="4"/><circle class="hole" cx="460" cy="305" r="4"/><circle class="hole" cx="485" cy="305" r="4"/><circle class="hole" cx="510" cy="305" r="4"/><circle class="hole" cx="535" cy="305" r="4"/><circle class="hole" cx="560" cy="305" r="4"/><circle class="hole" cx="585" cy="305" r="4"/><circle class="hole" cx="610" cy="305" r="4"/><circle class="hole" cx="635" cy="305" r="4"/><circle class="hole" cx="660" cy="305" r="4"/><circle class="hole" cx="685" cy="305" r="4"/><circle class="hole" cx="710" cy="305" r="4"/><circle class="hole" cx="735" cy="305" r="4"/><circle class="hole" cx="760" cy="305" r="4"/>
+      <circle class="hole" cx="160" cy="510" r="4"/><circle class="hole" cx="185" cy="510" r="4"/><circle class="hole" cx="210" cy="510" r="4"/><circle class="hole" cx="235" cy="510" r="4"/><circle class="hole" cx="260" cy="510" r="4"/><circle class="hole" cx="285" cy="510" r="4"/><circle class="hole" cx="310" cy="510" r="4"/><circle class="hole" cx="335" cy="510" r="4"/><circle class="hole" cx="360" cy="510" r="4"/><circle class="hole" cx="385" cy="510" r="4"/><circle class="hole" cx="410" cy="510" r="4"/><circle class="hole" cx="435" cy="510" r="4"/><circle class="hole" cx="460" cy="510" r="4"/><circle class="hole" cx="485" cy="510" r="4"/><circle class="hole" cx="510" cy="510" r="4"/><circle class="hole" cx="535" cy="510" r="4"/><circle class="hole" cx="560" cy="510" r="4"/><circle class="hole" cx="585" cy="510" r="4"/><circle class="hole" cx="610" cy="510" r="4"/><circle class="hole" cx="635" cy="510" r="4"/><circle class="hole" cx="660" cy="510" r="4"/><circle class="hole" cx="685" cy="510" r="4"/><circle class="hole" cx="710" cy="510" r="4"/><circle class="hole" cx="735" cy="510" r="4"/><circle class="hole" cx="760" cy="510" r="4"/>
+    </g>
+  </g>
+
+  <!-- ESP32 -->
+  <rect x="365" y="290" width="230" height="250" rx="16" fill="#111b17" stroke="#0b0f0d" stroke-width="3"/>
+  <rect x="438" y="328" width="78" height="92" rx="8" fill="#c8b99a"/>
+  <text class="h" x="480" y="570" text-anchor="middle">ESP32 DevKit</text>
+  <text class="s" x="480" y="592" text-anchor="middle">USB جهة اليسار بالصورة</text>
+
+  <!-- ESP32 pins labels -->
+  <text class="s" x="340" y="320" text-anchor="end">3V3</text>
+  <circle class="pin" cx="355" cy="315" r="6"/>
+  <text class="s" x="340" y="360" text-anchor="end">GND</text>
+  <circle class="pin" cx="355" cy="355" r="6"/>
+  <text class="s" x="340" y="400" text-anchor="end">GPIO34</text>
+  <circle class="pin" cx="355" cy="395" r="6"/>
+  <text class="s" x="340" y="440" text-anchor="end">GPIO35</text>
+  <circle class="pin" cx="355" cy="435" r="6"/>
+  <text class="s" x="620" y="400">GPIO26</text>
+  <circle class="pin" cx="605" cy="395" r="6"/>
+  <text class="s" x="620" y="440">VIN/5V</text>
+  <circle class="pin" cx="605" cy="435" r="6"/>
+
+  <!-- ESP32 to rails -->
+  <path class="red" d="M355 315 C250 315 230 205 150 205"/>
+  <path class="black" d="M355 355 C260 355 245 245 150 245"/>
+  <path class="red" d="M785 205 C815 250 815 550 785 595"/>
+  <path class="black" d="M760 245 C790 300 790 580 760 635"/>
+
+  <!-- Sensors -->
+  <rect class="card" x="910" y="130" width="390" height="170" rx="16"/>
+  <text class="h" x="1105" y="165" text-anchor="middle">HW-030 Soil Moisture</text>
+  <text class="t" x="940" y="210">VCC → 3V3 rail</text>
+  <text class="t" x="940" y="240">GND → GND rail</text>
+  <text class="t" x="940" y="270">AO  → GPIO34</text>
+
+  <rect class="card" x="910" y="330" width="390" height="170" rx="16"/>
+  <text class="h" x="1105" y="365" text-anchor="middle">HW-038 Tank Level</text>
+  <text class="t" x="940" y="410">+ / VCC → 3V3 rail</text>
+  <text class="t" x="940" y="440">- / GND → GND rail</text>
+  <text class="t" x="940" y="470">S / AO  → GPIO35</text>
+
+  <path class="red" d="M800 205 C870 185 885 198 910 205"/>
+  <path class="black" d="M800 245 C870 230 885 236 910 240"/>
+  <path class="orange" d="M355 395 C725 390 805 265 910 270"/>
+  <path class="red" d="M800 205 C865 320 875 400 910 410"/>
+  <path class="black" d="M800 245 C865 345 875 435 910 440"/>
+  <path class="purple" d="M355 435 C720 450 800 470 910 470"/>
+
+  <!-- Relay and pump -->
+  <rect class="card" x="910" y="540" width="390" height="240" rx="16"/>
+  <text class="h" x="1105" y="575" text-anchor="middle">Relay Module + USB Pump</text>
+  <text class="t" x="940" y="620">Relay VCC → VIN/5V</text>
+  <text class="t" x="940" y="650">Relay GND → GND rail</text>
+  <text class="t" x="940" y="680">Relay IN  → GPIO26</text>
+  <text class="t" x="940" y="725">USB +5V red: Power → COM → NO → Pump red</text>
+  <text class="t" x="940" y="755">USB black: Power GND → Pump black</text>
+
+  <path class="green" d="M605 395 C720 470 820 650 910 680"/>
+  <path class="red" d="M605 435 C720 520 820 610 910 620"/>
+  <path class="black" d="M760 635 C820 655 865 650 910 650"/>
+
+  <!-- warnings -->
+  <rect class="warn" x="90" y="720" width="590" height="120" rx="14"/>
+  <text class="h" x="120" y="755">مهم جداً</text>
+  <text class="t" x="120" y="790">لا تشغل المضخة من GPIO أو 3V3. المضخة USB تاخذ 5V خارجي فقط.</text>
+  <text class="t" x="120" y="820">الريلي يقطع السلك الأحمر فقط، والسلك الأسود يرجع مباشرة إلى GND مال مصدر USB.</text>
+
+  <rect class="ok" x="720" y="720" width="580" height="120" rx="14"/>
+  <text class="h" x="750" y="755">ألوان مقترحة</text>
+  <text class="t" x="750" y="790">أحمر = 3V3/5V، أسود = GND، برتقالي = Soil AO GPIO34</text>
+  <text class="t" x="750" y="820">بنفسجي = Tank S GPIO35، أخضر = Relay IN GPIO26</text>
+</svg>
