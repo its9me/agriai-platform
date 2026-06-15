@@ -1,8 +1,6 @@
-import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { reviewIrrigationCommandSafety } from "@/lib/gemini";
+import { POST as publishIrrigationCommandRoute } from "@/app/api/iot/command/route";
 import { calculateIrrigation } from "@/lib/irrigation";
-import { publishIrrigationCommand } from "@/lib/mqtt";
 import { createSupabaseAdmin } from "@/lib/supabase-server";
 import { getWeather } from "@/lib/weather";
 
@@ -268,11 +266,16 @@ export async function POST(request: NextRequest) {
       const firstBatch = batchPlan[0] ?? null;
       const safeDuration = Number(firstBatch?.duration_seconds ?? 0);
       const safeLiters = Number(firstBatch?.liters_target ?? 0);
+      const latestStoredRecommendation = landRecommendations[0] ?? null;
+      const storedDuration = Number(latestStoredRecommendation?.recommended_duration_seconds ?? 0);
+      const storedLiters = Number(latestStoredRecommendation?.total_liters_per_day ?? 0);
+      const commandDuration = storedDuration > 0 ? storedDuration : safeDuration;
+      const commandLiters = storedLiters > 0 ? storedLiters : safeLiters;
       const tankShortage = Number(irrigation?.tankShortageLiters ?? 0);
       const pestHold = riskRank(latestRisk) >= 3;
       const hasSoilMoisture = hasLatestSoilMoisture || landTelemetry.some((row) => Number.isFinite(Number(row.soil_moisture_percent)));
       const intervalNeedsApproval = Number(irrigation?.irrigationIntervalDays ?? 1) > 1 && !hasSoilMoisture;
-      const canPrepare = Boolean(activeDevice && irrigation && safeDuration > 0 && tankShortage <= 0 && !pestHold && hasTankReading && moistureAutoTrigger);
+      const canPrepare = Boolean(activeDevice && latestStoredRecommendation && commandDuration > 0 && commandLiters > 0 && tankShortage <= 0 && !pestHold && hasTankReading && moistureAutoTrigger);
 
       const blockers = [
         !hasLatestSoilMoisture ? "لا توجد قراءة رطوبة تربة من ESP32" : null,
@@ -313,135 +316,35 @@ export async function POST(request: NextRequest) {
         && !blockers.length
         && !warnings.filter((warning) => !String(warning).includes("ACK")).length
         && activeDevice
-        && safeDuration > 0
-        && safeDuration <= 1800
-        && batchPlan.length === 1
+        && latestStoredRecommendation
+        && commandDuration > 0
+        && commandDuration <= 1800
       ) {
-        const commandUuid = randomUUID();
-        const topic = activeDevice.mqtt_topic_command || `farms/${land.id}/devices/${activeDevice.device_uid}/commands`;
-        const systemRecommendation: any = landRecommendations[0] ?? (irrigation ? {
-          id: null,
-          total_liters_per_day: irrigation.totalLitersPerDay,
-          recommended_duration_seconds: safeDuration,
-          status: "computed_from_ai_analysis",
-          irrigation_mode: irrigation.irrigationMode,
-          irrigation_mode_label: irrigation.irrigationModeLabel
-        } : null);
-        const safetyReview = await reviewIrrigationCommandSafety({
-          land,
-          latestAnalysis,
-          recommendation: systemRecommendation,
-          device: {
-            id: activeDevice.id,
-            device_uid: activeDevice.device_uid,
-            topic
-          },
-          command: {
-            command_id: commandUuid,
-            duration_seconds: safeDuration,
-            max_duration_seconds: 1800
-          }
-        });
-        const commandPayload: any = {
-          command_id: commandUuid,
-          land_id: land.id,
-          device_uid: activeDevice.device_uid,
-          status: "ON",
-          duration_seconds: safeDuration,
-          issued_at: new Date().toISOString(),
-          reason: "Safe Autopilot automatic execution",
-          liters_target: safeLiters,
-          batch: {
-            current: 1,
-            total: 1
-          },
-          recommendation: systemRecommendation
-            ? {
-                id: systemRecommendation.id,
-                liters_per_day: systemRecommendation.total_liters_per_day,
-                previous_status: systemRecommendation.status,
-                irrigation_mode: systemRecommendation.irrigation_mode,
-                irrigation_mode_label: systemRecommendation.irrigation_mode_label
-              }
-            : null,
-          safety: {
-            max_duration_seconds: 1800,
-            require_ack: true,
-            ai_review: safetyReview
-          }
-        };
-
-        const { data: commandRow, error: commandError } = await supabase
-          .from("iot_commands")
-          .insert({
+        const commandRequest = new NextRequest(new URL("/api/iot/command", request.url), {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
             land_id: land.id,
-            device_id: activeDevice.id,
-            recommendation_id: landRecommendations[0]?.id ?? null,
-            command_uuid: commandUuid,
-            payload: commandPayload,
-            status: "queued"
+            device_uid: activeDevice.device_uid,
+            recommendation_id: latestStoredRecommendation.id,
+            duration_seconds: commandDuration,
+            liters_target: commandLiters,
+            flow_rate_liters_per_minute: flowRateLitersPerMinute,
+            recalculate_duration_from_flow: false,
+            sensor_autopilot: true,
+            reason: `Stored recommendation autopilot: soil moisture ${latestSoilMoisture.toFixed(0)}%, trigger ${moistureThresholdPercent.toFixed(0)}%.`
           })
-          .select("id,command_uuid")
-          .single();
+        });
+        const commandResponse = await publishIrrigationCommandRoute(commandRequest);
+        const commandResult = await commandResponse.json().catch(() => ({}));
 
-        if (commandError) {
-          execution = { status: "failed_to_queue", error: commandError.message };
-        } else if (safetyReview?.decision !== "approve") {
-          await supabase
-            .from("iot_commands")
-            .update({
-              status: "failed",
-              ack_payload: {
-                safety_review: safetyReview,
-                blocked_at: new Date().toISOString()
-              }
-            })
-            .eq("id", commandRow.id);
-          execution = {
-            status: "held_by_ai",
-            commandId: commandRow.id,
-            commandUuid: commandRow.command_uuid,
-            topic,
-            error: safetyReview?.operator_message ?? "AI safety review held the command"
-          };
-        } else {
-          try {
-            await publishIrrigationCommand(topic, commandPayload);
-            await supabase
-              .from("iot_commands")
-              .update({
-                status: "published",
-                published_at: new Date().toISOString()
-              })
-              .eq("id", commandRow.id);
-            execution = {
-              status: "published",
-              commandId: commandRow.id,
-              commandUuid: commandRow.command_uuid,
-              topic
-            };
-          } catch (error) {
-            const message = error instanceof Error ? error.message : "MQTT publish failed";
-            await supabase
-              .from("iot_commands")
-              .update({
-                status: "failed",
-                ack_payload: {
-                  error: message,
-                  failed_at: new Date().toISOString(),
-                  safety_review: safetyReview
-                }
-              })
-              .eq("id", commandRow.id);
-            execution = {
-              status: "failed",
-              commandId: commandRow.id,
-              commandUuid: commandRow.command_uuid,
-              topic,
-              error: message
-            };
-          }
-        }
+        execution = {
+          status: commandResponse.ok ? "published" : "failed",
+          commandId: commandResult.commandId,
+          commandUuid: commandResult.commandUuid,
+          topic: commandResult.topic,
+          error: commandResponse.ok ? undefined : commandResult.error ?? "Autopilot command publish failed"
+        };
       }
 
       decisions.push({
@@ -460,8 +363,8 @@ export async function POST(request: NextRequest) {
         water: irrigation ? {
           liters_per_irrigation: irrigation.totalLitersPerIrrigation,
           executable_liters: irrigation.executableLiters,
-          safe_batch_liters: safeLiters,
-          duration_seconds: safeDuration,
+          safe_batch_liters: commandLiters,
+          duration_seconds: commandDuration,
           full_duration_seconds: fullDuration,
           interval_days: irrigation.irrigationIntervalDays,
           irrigation_mode: irrigation.irrigationMode,

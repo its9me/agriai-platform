@@ -1868,9 +1868,11 @@ export default function Home() {
   const configuredFlowRateLpm = Math.max(0.1, Number(flowRate) || 10);
   const latestRecommendationStoredDuration = Number(latestRecommendation?.recommended_duration_seconds ?? 0);
   const latestRecommendationLiters = Number(latestRecommendation?.total_liters_per_day ?? 0);
-  const latestRecommendationDuration = latestRecommendationLiters > 0
-    ? Math.ceil((latestRecommendationLiters / configuredFlowRateLpm) * 60)
-    : latestRecommendationStoredDuration;
+  const latestRecommendationDuration = latestRecommendationStoredDuration > 0
+    ? latestRecommendationStoredDuration
+    : latestRecommendationLiters > 0
+      ? Math.ceil((latestRecommendationLiters / configuredFlowRateLpm) * 60)
+      : 0;
   const latestRecommendationSafeDuration = Math.min(1800, Math.max(0, latestRecommendationDuration));
   const latestRecommendationSafeLiters = latestRecommendationDuration > 0
     ? latestRecommendationLiters * (latestRecommendationSafeDuration / latestRecommendationDuration)
@@ -2528,9 +2530,7 @@ export default function Home() {
 
     const litersTarget = Number(latestSystemRecommendation?.total_liters_per_day ?? result?.irrigation.totalLitersPerDay);
     const flowRateLpm = Math.max(0.1, Number(flowRate) || 10);
-    const requestedDurationSeconds = Number.isFinite(litersTarget) && litersTarget > 0
-      ? Math.ceil((litersTarget / flowRateLpm) * 60)
-      : Number(latestSystemRecommendation?.recommended_duration_seconds ?? result?.irrigation.recommendedIrrigationDurationSeconds ?? result?.irrigation.recommendedDurationSeconds);
+    const requestedDurationSeconds = Number(latestSystemRecommendation?.recommended_duration_seconds ?? result?.irrigation.recommendedIrrigationDurationSeconds ?? result?.irrigation.recommendedDurationSeconds);
     if (!Number.isFinite(requestedDurationSeconds) || requestedDurationSeconds <= 0 || requestedDurationSeconds > 86400) {
       setError("مدة توصية الري يجب أن تكون بين 1 و 86400 ثانية. المنصة ستقسم أي مدة فوق 1800 ثانية إلى دفعات آمنة.");
       setStatus("");
@@ -2547,7 +2547,7 @@ export default function Home() {
         duration_seconds: requestedDurationSeconds,
         liters_target: Number.isFinite(litersTarget) && litersTarget > 0 ? litersTarget : null,
         flow_rate_liters_per_minute: flowRateLpm,
-        recalculate_duration_from_flow: true,
+        recalculate_duration_from_flow: false,
         reason: "Full system irrigation recommendation"
       })
     });
